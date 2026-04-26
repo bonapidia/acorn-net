@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <title>The Acorn Net</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+```
+:root {
+  --parchment: #F5F0E8;
+  --parchment-dark: #EDE8DE;
+  --border: #E0D8C8;
+  --border-dark: #D8CFC0;
+  --ink: #1A1A1A;
+  --ink-mid: #555;
+  --ink-light: #999;
+  --ink-faint: #CCC;
+  --amber: #C17F3C;
+  --amber-dark: #A86D2E;
+  --night: #1A1A2E;
+  --night-mid: #16213E;
+  --night-deep: #0F3460;
+  --slate: #7A8FA6;
+  --card: #FDFAF4;
+  --serif: 'Lora', 'Georgia', serif;
+  --mono: 'DM Mono', monospace;
+}
+
+html, body { height: 100%; background: var(--parchment); color: var(--ink); font-family: var(--serif); }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%,100% { opacity: 0.2; } 50% { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes cardIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.screen { display: none; }
+.screen.active { display: block; }
+
+#screen-loading { min-height: 100vh; display: none; align-items: center; justify-content: center; background: var(--parchment); }
+#screen-loading.active { display: flex; }
+.loading-acorn { font-size: 36px; animation: pulse 1.4s ease-in-out infinite; color: var(--amber); }
+
+#screen-login { min-height: 100vh; display: none; align-items: center; justify-content: center; background: linear-gradient(160deg, var(--night) 0%, var(--night-mid) 50%, var(--night-deep) 100%); padding: 28px 20px; }
+#screen-login.active { display: flex; }
+
+.login-card { width: 100%; max-width: 400px; opacity: 0; transform: translateY(20px); transition: opacity 0.6s cubic-bezier(0.16,1,0.3,1), transform 0.6s cubic-bezier(0.16,1,0.3,1); }
+.login-card.visible { opacity: 1; transform: translateY(0); }
+
+.wordmark { font-family: var(--serif); font-size: 40px; font-weight: 400; letter-spacing: -1px; color: var(--parchment); line-height: 1; margin-bottom: 6px; }
+.tagline { font-size: 12px; color: var(--slate); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 36px; font-style: italic; }
+.login-box { background: rgba(245,240,232,0.05); border: 1px solid rgba(245,240,232,0.1); border-radius: 16px; padding: 28px; backdrop-filter: blur(12px); }
+.error-msg { color: #E07070; font-size: 13px; font-style: italic; margin-bottom: 14px; display: none; }
+.error-msg.show { display: block; }
+
+.google-btn { width: 100%; background: #fff; border: none; border-radius: 10px; padding: 14px 20px; display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; font-size: 15px; font-family: var(--serif); color: var(--ink); box-shadow: 0 2px 8px rgba(0,0,0,0.18); transition: box-shadow 0.2s, transform 0.1s; }
+.google-btn:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.25); transform: translateY(-1px); }
+.google-btn:active { transform: translateY(0); }
+.google-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.google-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+.login-note { margin-top: 20px; text-align: center; font-size: 12px; color: #4A5C6A; font-style: italic; line-height: 1.7; }
+.pill-row { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 18px; }
+.pill { background: rgba(193,127,60,0.12); border: 1px solid rgba(193,127,60,0.28); border-radius: 100px; padding: 5px 11px; font-size: 11px; color: var(--amber); letter-spacing: 0.05em; }
+
+#screen-home { display: none; min-height: 100vh; background: var(--parchment); }
+#screen-home.active { display: block; }
+.home-inner { max-width: 680px; margin: 0 auto; padding-bottom: 88px; }
+
+.header { position: sticky; top: 0; z-index: 100; background: rgba(245,240,232,0.93); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 14px 18px; }
+.header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.home-wordmark { font-family: var(--serif); font-size: 24px; font-weight: 400; letter-spacing: -0.5px; color: var(--ink); }
+.header-right { display: flex; align-items: center; gap: 10px; }
+.user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--amber); display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; font-family: var(--serif); overflow: hidden; flex-shrink: 0; }
+.user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.sign-out-btn { background: none; border: none; cursor: pointer; color: var(--ink-light); font-size: 18px; padding: 5px; border-radius: 7px; transition: color 0.15s; display: flex; align-items: center; }
+.sign-out-btn:hover { color: var(--amber); }
+
+.search-bar { width: 100%; background: var(--parchment-dark); border: 1px solid var(--border-dark); border-radius: 100px; padding: 9px 16px; font-size: 14px; color: var(--ink); outline: none; font-family: var(--serif); margin-bottom: 12px; transition: border-color 0.2s; }
+.search-bar:focus { border-color: var(--amber); }
+
+.tag-row { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.tag-row::-webkit-scrollbar { display: none; }
+.tag-pill { padding: 5px 13px; border-radius: 100px; font-size: 12px; border: 1px solid var(--border-dark); background: transparent; color: #666; cursor: pointer; white-space: nowrap; font-family: var(--serif); transition: all 0.15s; }
+.tag-pill.active { border-color: transparent; color: #fff; }
+
+.manifesto { margin: 18px 16px 0; background: var(--night); border-radius: 14px; padding: 16px 18px; display: flex; gap: 12px; align-items: flex-start; }
+.manifesto-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+.manifesto-text { font-size: 13px; color: var(--slate); line-height: 1.65; font-style: italic; }
+.manifesto-bold { color: var(--amber); font-style: normal; }
+
+.feed { padding: 0 14px; }
+.feed-empty { text-align: center; padding: 60px 20px; color: var(--ink-light); font-style: italic; font-size: 15px; }
+.feed-loading { text-align: center; padding: 40px; color: var(--amber); font-size: 22px; animation: pulse 1.4s ease-in-out infinite; }
+
+.post-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-top: 13px; animation: cardIn 0.35s ease forwards; }
+.card-top { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 11px; }
+.card-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; font-family: var(--serif); flex-shrink: 0; overflow: hidden; }
+.card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.card-user { flex: 1; min-width: 0; }
+.card-name { font-size: 14px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-handle { font-size: 11px; color: var(--ink-light); }
+.card-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.card-tag { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 8px; border-radius: 100px; white-space: nowrap; }
+.card-time { font-size: 11px; color: var(--ink-faint); }
+.card-content { font-size: 15px; line-height: 1.68; color: #2A2A2A; margin-bottom: 13px; }
+.card-actions { display: flex; gap: 14px; align-items: center; }
+.action-btn { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--ink-light); font-family: var(--serif); padding: 3px 0; display: flex; align-items: center; gap: 5px; transition: color 0.15s; }
+.action-btn.active { color: var(--amber); }
+.action-btn:hover { color: var(--amber); }
+.card-spacer { flex: 1; }
+.delete-btn { background: none; border: none; cursor: pointer; font-size: 12px; color: var(--ink-faint); font-family: var(--serif); padding: 3px 0; transition: color 0.15s; }
+.delete-btn:hover { color: #E07070; }
+
+.fab { position: fixed; bottom: 22px; right: 20px; width: 52px; height: 52px; border-radius: 50%; background: var(--amber); border: none; cursor: pointer; font-size: 22px; color: #fff; box-shadow: 0 4px 20px rgba(193,127,60,0.42); transition: transform 0.2s, box-shadow 0.2s; z-index: 200; display: flex; align-items: center; justify-content: center; }
+.fab:hover { transform: scale(1.08); box-shadow: 0 6px 26px rgba(193,127,60,0.55); }
+.fab:active { transform: scale(0.96); }
+
+.overlay { display: none; position: fixed; inset: 0; background: rgba(20,16,10,0.52); z-index: 300; align-items: flex-end; justify-content: center; }
+.overlay.open { display: flex; }
+.compose-sheet { background: var(--card); border-radius: 20px 20px 0 0; padding: 22px 18px 32px; width: 100%; max-width: 680px; animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1); }
+.sheet-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border-dark); margin: 0 auto 18px; }
+.sheet-title { font-size: 17px; margin-bottom: 14px; color: var(--ink); }
+.compose-textarea { width: 100%; background: var(--parchment); border: 1px solid var(--border); border-radius: 10px; padding: 12px 13px; font-size: 15px; font-family: var(--serif); color: var(--ink); outline: none; resize: none; min-height: 96px; margin-bottom: 13px; transition: border-color 0.2s; }
+.compose-textarea:focus { border-color: var(--amber); }
+.compose-tag-row { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 15px; }
+.compose-actions { display: flex; gap: 10px; justify-content: flex-end; }
+.cancel-btn { background: none; border: 1px solid var(--border-dark); border-radius: 8px; padding: 10px 18px; color: #888; cursor: pointer; font-family: var(--serif); font-size: 14px; }
+.post-btn { background: var(--amber); border: none; border-radius: 8px; padding: 10px 22px; color: #fff; cursor: pointer; font-family: var(--serif); font-size: 14px; letter-spacing: 0.05em; transition: background 0.2s; }
+.post-btn:hover { background: var(--amber-dark); }
+.post-btn:disabled { background: var(--border-dark); color: #AAA; cursor: not-allowed; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 3px; }
+```
+
+  </style>
+</head>
+<body>
+
+  <div id="screen-loading" class="screen active">
+    <div class="loading-acorn">✦</div>
+  </div>
+
+  <div id="screen-login" class="screen">
+    <div class="login-card" id="login-card">
+      <div class="wordmark">The Acorn Net</div>
+      <div class="tagline">Small things, deep roots</div>
+      <div class="login-box">
+        <div class="error-msg" id="login-error"></div>
+        <button class="google-btn" id="google-btn" onclick="signInWithGoogle()">
+          <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Continue with Google
+        </button>
+      </div>
+      <div class="login-note">A space for craft, curiosity, and real ideas.<br>No outrage. No algorithms. No noise.</div>
+      <div class="pill-row">
+        <span class="pill">No politics</span>
+        <span class="pill">No AI slop</span>
+        <span class="pill">No rage bait</span>
+        <span class="pill">Real people</span>
+        <span class="pill">Real ideas</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-home" class="screen">
+    <div class="home-inner">
+      <div class="header">
+        <div class="header-top">
+          <span class="home-wordmark">The Acorn Net</span>
+          <div class="header-right">
+            <div class="user-avatar" id="user-avatar"></div>
+            <button class="sign-out-btn" onclick="handleSignOut()" title="Sign out">↩</button>
+          </div>
+        </div>
+        <input class="search-bar" id="search-bar" placeholder="Search posts, people, topics…" oninput="filterPosts()" />
+        <div class="tag-row" id="tag-row"></div>
+      </div>
+      <div class="manifesto">
+        <div class="manifesto-icon">✦</div>
+        <div class="manifesto-text">
+          <span class="manifesto-bold">The Acorn Net</span> surfaces only what's worth your attention —
+          craft, ideas, curiosity, and human effort. No politics. No outrage. No AI-generated filler.
+        </div>
+      </div>
+      <div class="feed" id="feed">
+        <div class="feed-loading">✦</div>
+      </div>
+    </div>
+    <button class="fab" onclick="openCompose()">✦</button>
+  </div>
+
+  <div class="overlay" id="compose-overlay" onclick="overlayClick(event)">
+    <div class="compose-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">Share something worth sharing</div>
+      <textarea class="compose-textarea" id="compose-text" placeholder="What are you making, reading, thinking about?" rows="4"></textarea>
+      <div class="compose-tag-row" id="compose-tags"></div>
+      <div class="compose-actions">
+        <button class="cancel-btn" onclick="closeCompose()">Cancel</button>
+        <button class="post-btn" id="post-btn" onclick="submitPost()">Post to The Acorn Net</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot, serverTimestamp, arrayUnion, arrayRemove, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA-D8E37viSRcTl-sL6EFWTPOOUuC95NIU",
+      authDomain: "the-acorn-net.firebaseapp.com",
+      projectId: "the-acorn-net",
+      storageBucket: "the-acorn-net.firebasestorage.app",
+      messagingSenderId: "20905402550",
+      appId: "1:20905402550:web:2d56bae3732d833afa8617",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+    await setPersistence(auth, browserLocalPersistence);
+
+    const TAGS = ["All","Craft","Books","Running","Art","Making","Wellness"];
+    const TAG_COLORS = { Craft:"#C17F3C", Books:"#7B2D8B", Running:"#1A6B4A", Art:"#8B3A2D", Making:"#1A3A5C", Wellness:"#3D3D6B", All:"#444" };
+    const AVATAR_COLORS = ["#2D6A4F","#6B4226","#7B2D8B","#1A3A5C","#8B3A2D","#2A5C3F","#3D3D6B","#C17F3C","#1A6B4A"];
+
+    let currentUser = null, allPosts = [], activeTag = "All", selectedComposeTag = "Craft", unsubPosts = null;
+
+    function timeAgo(ts) {
+      if (!ts) return "just now";
+      const diff = Math.floor((Date.now() - ts.toMillis()) / 1000);
+      if (diff < 60) return "just now";
+      if (diff < 3600) return Math.floor(diff/60) + "m ago";
+      if (diff < 86400) return Math.floor(diff/3600) + "h ago";
+      return Math.floor(diff/86400) + "d ago";
+    }
+    function initials(name) { return (name||"?").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase(); }
+    function avatarColor(uid) {
+      if (!uid) return AVATAR_COLORS[0];
+      let h = 0; for (let i=0;i<uid.length;i++) h = uid.charCodeAt(i)+((h<<5)-h);
+      return AVATAR_COLORS[Math.abs(h)%AVATAR_COLORS.length];
+    }
+    function escHtml(s) { return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+    function show(id) { document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); document.getElementById(id).classList.add("active"); }
+    function showLogin() { show("screen-login"); setTimeout(()=>document.getElementById("login-card").classList.add("visible"),60); }
+    function showHome() { show("screen-home"); buildTagRow(); buildComposeTags(); }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        await setDoc(doc(db,"users",user.uid),{ name:user.displayName, email:user.email, photo:user.photoURL, lastSeen:serverTimestamp() },{ merge:true });
+        const el = document.getElementById("user-avatar");
+        if (user.photoURL) { el.innerHTML=`<img src="${user.photoURL}" referrerpolicy="no-referrer" alt=""/>`; }
+        else { el.style.background=avatarColor(user.uid); el.textContent=initials(user.displayName); }
+        showHome();
+        const q = query(collection(db,"posts"),orderBy("createdAt","desc"));
+        unsubPosts = onSnapshot(q,(snap)=>{ allPosts=snap.docs.map(d=>({id:d.id,...d.data()})); renderFeed(); });
+      } else {
+        currentUser = null;
+        if (unsubPosts) { unsubPosts(); unsubPosts=null; }
+        showLogin();
+      }
+    });
+
+    window.signInWithGoogle = async () => {
+      const btn=document.getElementById("google-btn"), err=document.getElementById("login-error");
+      btn.disabled=true; btn.textContent="Signing in…"; err.classList.remove("show");
+      try { await signInWithPopup(auth,provider); }
+      catch(e) {
+        if (e.code!=="auth/popup-closed-by-user") { err.textContent="Sign-in failed. Please try again."; err.classList.add("show"); }
+        btn.disabled=false;
+        btn.innerHTML=`<svg viewBox="0 0 24 24" style="width:20px;height:20px;flex-shrink:0"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Continue with Google`;
+      }
+    };
+
+    window.handleSignOut = async () => { await signOut(auth); };
+
+    function buildTagRow() {
+      document.getElementById("tag-row").innerHTML = TAGS.map(t=>`<button class="tag-pill ${t===activeTag?'active':''}" style="${t===activeTag?`background:${TAG_COLORS[t]}`:''}" onclick="setTag('${t}')">${t}</button>`).join("");
+    }
+    window.setTag = (t) => { activeTag=t; buildTagRow(); renderFeed(); };
+
+    function buildComposeTags() {
+      document.getElementById("compose-tags").innerHTML = TAGS.filter(t=>t!=="All").map(t=>`<button class="tag-pill ${t===selectedComposeTag?'active':''}" style="${t===selectedComposeTag?`background:${TAG_COLORS[t]}`:''}" onclick="setComposeTag('${t}')">${t}</button>`).join("");
+    }
+    window.setComposeTag = (t) => { selectedComposeTag=t; buildComposeTags(); };
+
+    function renderFeed() {
+      const feed=document.getElementById("feed"), q=document.getElementById("search-bar").value.toLowerCase();
+      const filtered=allPosts.filter(p=>(activeTag==="All"||p.tag===activeTag)&&(!q||(p.content||"").toLowerCase().includes(q)||(p.authorName||"").toLowerCase().includes(q)||(p.tag||"").toLowerCase().includes(q)));
+      if (!filtered.length) { feed.innerHTML=`<div class="feed-empty">${q?`No posts matching "${q}"`:"Nothing here yet — be the first to post."}</div>`; return; }
+      feed.innerHTML = filtered.map(post => {
+        const liked=(post.likedBy||[]).includes(currentUser.uid), saved=(post.savedBy||[]).includes(currentUser.uid);
+        const isOwn=post.authorId===currentUser.uid, color=avatarColor(post.authorId), tc=TAG_COLORS[post.tag]||"#888";
+        return `<div class="post-card">
+          <div class="card-top">
+            <div class="card-avatar" style="${post.authorPhoto?'':` background:${color}`}">${post.authorPhoto?`<img src="${post.authorPhoto}" referrerpolicy="no-referrer" alt=""/>`:initials(post.authorName)}</div>
+            <div class="card-user"><div class="card-name">${escHtml(post.authorName||"Anonymous")}</div><div class="card-handle">${escHtml(post.authorHandle||"")}</div></div>
+            <div class="card-meta"><span class="card-tag" style="color:${tc};background:${tc}18;border:1px solid ${tc}40">${escHtml(post.tag)}</span><span class="card-time">${timeAgo(post.createdAt)}</span></div>
+          </div>
+          <div class="card-content">${escHtml(post.content)}</div>
+          <div class="card-actions">
+            <button class="action-btn ${liked?'active':''}" onclick="toggleLike('${post.id}',${liked})">${liked?"♥":"♡"} ${(post.likedBy||[]).length}</button>
+            <button class="action-btn ${saved?'active':''}" onclick="toggleSave('${post.id}',${saved})">${saved?"⊛":"⊙"} Save</button>
+            <div class="card-spacer"></div>
+            ${isOwn?`<button class="delete-btn" onclick="deletePost('${post.id}')">Delete</button>`:""}
+          </div>
+        </div>`;
+      }).join("");
+    }
+
+    window.filterPosts = () => renderFeed();
+    window.toggleLike = async (id,liked) => { await updateDoc(doc(db,"posts",id),{ likedBy:liked?arrayRemove(currentUser.uid):arrayUnion(currentUser.uid) }); };
+    window.toggleSave = async (id,saved) => { await updateDoc(doc(db,"posts",id),{ savedBy:saved?arrayRemove(currentUser.uid):arrayUnion(currentUser.uid) }); };
+    window.deletePost = async (id) => { await deleteDoc(doc(db,"posts",id)); };
+
+    window.openCompose = () => { document.getElementById("compose-overlay").classList.add("open"); setTimeout(()=>document.getElementById("compose-text").focus(),320); };
+    window.closeCompose = () => { document.getElementById("compose-overlay").classList.remove("open"); };
+    window.overlayClick = (e) => { if(e.target===document.getElementById("compose-overlay")) closeCompose(); };
+
+    window.submitPost = async () => {
+      const text=document.getElementById("compose-text").value.trim(); if (!text) return;
+      const btn=document.getElementById("post-btn"); btn.disabled=true; btn.textContent="Posting…";
+      try {
+        await addDoc(collection(db,"posts"),{ content:text, tag:selectedComposeTag, authorId:currentUser.uid, authorName:currentUser.displayName, authorPhoto:currentUser.photoURL, authorHandle:"@"+(currentUser.displayName||"").toLowerCase().replace(/\s+/g,""), createdAt:serverTimestamp(), likedBy:[], savedBy:[] });
+        document.getElementById("compose-text").value=""; closeCompose(); activeTag="All"; buildTagRow();
+      } catch(e){ console.error(e); }
+      finally { btn.disabled=false; btn.textContent="Post to The Acorn Net"; }
+    };
+  </script>
+
+</body>
+</html>
